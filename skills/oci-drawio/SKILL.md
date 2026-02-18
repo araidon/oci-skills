@@ -122,24 +122,31 @@ Subnets span the full width of the VCN and are stacked vertically (Edge/App/Data
 ```
 ┌─ Region (実線グレー) ───────────────────────────────────────────┐
 │                                                                │
-│  ┌─ VCN (破線オレンジ) ────────────────────────┐   [Regional    │
-│  │                                             │    Services]  │
-│  │  ┌─ Edge Subnet (破線オレンジ) ──────────┐  │   [OSN]       │
-│  │  │  [LB]  [Bastion]  ...                │  │   [OCIR]      │
-│  │  └──────────────────────────────────────┘  │               │
-│  │  ┌─ App Subnet ─────────────────────────┐  │               │
-│  │  │  [App]  [App]  [App]  ...            │  │               │
-│  │  └──────────────────────────────────────┘  │               │
-│  │  ┌─ Data Subnet ────────────────────────┐  │               │
-│  │  │  [DB]  ...                           │  │               │
-│  │  └──────────────────────────────────────┘  │               │
-│  └──────────────────────────────────────────┘                 │
+│ [IGW]┌─ VCN (破線オレンジ) ────────────────┐[SGW] [Regional    │
+│ [NAT]│                                     │       Services]  │
+│ [DRG]│  ┌─ Edge Subnet ────────────────┐   │      [OSN]       │
+│      │  │  [LB]  [Bastion]  ...        │   │      [OCIR]      │
+│      │  └──────────────────────────────┘   │                  │
+│      │  ┌─ App Subnet ─────────────────┐   │                  │
+│      │  │  [App]  [App]  [App]  ...    │   │                  │
+│      │  └──────────────────────────────┘   │                  │
+│      │  ┌─ Data Subnet ────────────────┐   │                  │
+│      │  │  [DB]  ...                   │   │                  │
+│      │  └──────────────────────────────┘   │                  │
+│      └─────────────────────────────────────┘                  │
 └────────────────────────────────────────────────────────────────┘
 ```
 
-### Gateway / Connectivity
+### Gateway Placement
 
-In the Oracle official style, gateway **icons** are not placed straddling the VCN border. Instead, connection lines pass directly through VCN and Subnet boundaries. However, if the diagram needs to explicitly show gateways (IGW, NAT, DRG, SGW), place them as icons inside the VCN near the relevant border.
+Gateway icons straddle the VCN border (icon center aligned with the border line). Use `parent="vcn-1"`.
+
+| Gateway           | Position                              | Coordinates (VCN-relative) |
+|--------------------|---------------------------------------|---------------------------|
+| Internet Gateway   | VCN **left border**                   | x=-30, y=80               |
+| NAT Gateway        | VCN **left border** (below IGW)       | x=-30, y=200              |
+| DRG                | VCN **left border** (below NAT)       | x=-30, y=320              |
+| Service Gateway    | VCN **right border**                  | x=830, y=80               |
 
 ### Regional Services (outside VCN)
 
@@ -175,6 +182,14 @@ VCN:          x=20,  y=40,  w=860,  h=640   (inside Region, relative coords)
 Edge Sub:     x=20,  y=40,  w=820,  h=170   (inside VCN, relative, full width)
 App Sub:      x=20,  y=230, w=820,  h=200   (inside VCN, relative)
 Data Sub:     x=20,  y=450, w=820,  h=170   (inside VCN, relative)
+```
+
+Gateways (inside VCN, straddling the border):
+```
+IGW:          x=-30, y=80,  w=60,   h=60    (left border, parent=vcn-1)
+NAT:          x=-30, y=200, w=60,   h=60    (left border, parent=vcn-1)
+DRG:          x=-30, y=320, w=60,   h=60    (left border, parent=vcn-1)
+SGW:          x=830, y=80,  w=60,   h=60    (right border, parent=vcn-1)
 ```
 
 Regional services (inside Region, right of VCN):
@@ -253,14 +268,20 @@ Available component keys (non-exhaustive):
           <mxGeometry x="20" y="450" width="820" height="170" as="geometry"/>
         </mxCell>
 
+        <!-- Gateways on VCN border (parent=vcn-1, straddling the border) -->
+        <mxCell id="igw-1" value="Internet Gateway" style="{{Internet Gateway style}}" vertex="1" parent="vcn-1">
+          <mxGeometry x="-30" y="80" width="60" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="nat-1" value="NAT Gateway" style="{{NAT Gateway style}}" vertex="1" parent="vcn-1">
+          <mxGeometry x="-30" y="200" width="60" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="sgw-1" value="Service Gateway" style="{{Service Gateway style}}" vertex="1" parent="vcn-1">
+          <mxGeometry x="830" y="80" width="60" height="60" as="geometry"/>
+        </mxCell>
+
         <!-- Load Balancer in Edge Subnet -->
         <mxCell id="lb-1" value="Load Balancer" style="{{Load Balancer style}}" vertex="1" parent="subnet-edge-1">
           <mxGeometry x="60" y="60" width="60" height="60" as="geometry"/>
-        </mxCell>
-
-        <!-- Bastion in Edge Subnet -->
-        <mxCell id="bastion-1" value="Bastion" style="{{Bastion style}}" vertex="1" parent="subnet-edge-1">
-          <mxGeometry x="220" y="60" width="60" height="60" as="geometry"/>
         </mxCell>
 
         <!-- App Servers in App Subnet -->
@@ -281,10 +302,16 @@ Available component keys (non-exhaustive):
 
         <!-- Regional Service: Object Storage -->
         <mxCell id="objst-1" value="Object Storage" style="{{Object Storage style}}" vertex="1" parent="region-1">
-          <mxGeometry x="920" y="80" width="60" height="60" as="geometry"/>
+          <mxGeometry x="920" y="200" width="60" height="60" as="geometry"/>
         </mxCell>
 
-        <!-- Connections (arrows) -->
+        <!-- Connections -->
+        <mxCell id="conn-igw-lb" style="endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;edgeStyle=orthogonalEdgeStyle;" edge="1" source="igw-1" target="lb-1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="conn-sgw-obj" style="endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;edgeStyle=orthogonalEdgeStyle;" edge="1" source="sgw-1" target="objst-1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
         <mxCell id="conn-1" style="endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;edgeStyle=orthogonalEdgeStyle;" edge="1" source="lb-1" target="app-1" parent="1">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
