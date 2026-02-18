@@ -146,18 +146,26 @@ CATEGORY_MAP = {
     "storage": "storage",
     "identitysecurity": "security",
     "identity security": "security",
+    "identityandsecurity": "security",
+    "identity&security": "security",
     "identity": "security",
     "security": "security",
     "containers": "container",
     "container": "container",
     "developerservices": "developer",
     "developer services": "developer",
+    "developer": "developer",
     "devops": "developer",
     "governance": "governance",
     "monitoring": "monitoring",
     "monitoringmanagement": "monitoring",
     "monitoring and management": "monitoring",
+    "observabilityandmanagement": "monitoring",
+    "observability&management": "monitoring",
+    "observabilitymanagement": "monitoring",
     "analyticsai": "ai",
+    "analytics&ai": "ai",
+    "analyticsandai": "ai",
     "analytics": "ai",
     "ai": "ai",
     "migration": "migration",
@@ -166,6 +174,9 @@ CATEGORY_MAP = {
     "edge": "networking",
     "connectivity": "networking",
     "groups": "groups",
+    "marketplace": "applications",
+    "other": "general",
+    "ociuploadedtoomm": "general",
 }
 
 # ── Name normalization: filename -> human-readable name ──
@@ -417,6 +428,44 @@ with open(components_json_path, 'w') as f:
     json.dump(components, f, indent=2, ensure_ascii=False)
 
 print(f"Generated: {components_json_path} ({len(components)} components)", file=sys.stderr)
+
+# ── Generate index.json and per-category JSON files ──
+components_dir = Path(components_json_path).parent
+
+# Normalize category names for filenames (no &, spaces, or long names)
+CAT_NORMALIZE = {
+    "analytics&ai": "ai", "analyticsai": "ai", "analyticsandai": "ai",
+    "identity&security": "security", "identitysecurity": "security",
+    "identityandsecurity": "security",
+    "observabilityandmanagement": "monitoring",
+    "observability&management": "monitoring",
+    "observabilitymanagement": "monitoring", "monitoringmanagement": "monitoring",
+    "marketplace": "applications",
+    "ociuploadedtoomm": "general", "other": "general",
+    "containers": "container",
+}
+
+# Build index: { component_name: category }
+index = {}
+by_category = {}
+for name, comp in components.items():
+    raw_cat = comp["category"]
+    cat = CAT_NORMALIZE.get(raw_cat, raw_cat)
+    index[name] = cat
+    by_category.setdefault(cat, {})[name] = comp
+
+# Write index.json
+index_path = components_dir / "index.json"
+with open(index_path, 'w') as f:
+    json.dump(index, f, indent=2, ensure_ascii=False)
+print(f"Generated: {index_path} ({len(index)} entries)", file=sys.stderr)
+
+# Write per-category JSON files
+for cat, cat_components in sorted(by_category.items()):
+    cat_path = components_dir / f"{cat}.json"
+    with open(cat_path, 'w') as f:
+        json.dump(cat_components, f, indent=2, ensure_ascii=False)
+    print(f"Generated: {cat_path} ({len(cat_components)} components)", file=sys.stderr)
 PYTHON_SCRIPT
 }
 

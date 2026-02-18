@@ -18,15 +18,19 @@ bash setup.sh
 
 This generates:
 - `icons/oci-shapes.xml` — draw.io custom shape library (for GUI drag-and-drop)
-- `components/oci_components.json` — component dictionary (for programmatic generation)
+- `components/oci_components.json` — full component dictionary (1.5MB, for backward compatibility)
+- `components/index.json` — lightweight name→category index (~5KB)
+- `components/{category}.json` — per-category component files (50-300KB each)
 
 ## How to Use This Skill
 
 When asked to create or edit an OCI architecture diagram:
 
-1. Read `components/oci_components.json` to look up available components and their `style` strings
-2. Generate `.drawio` XML following the structure and rules below
-3. Save the output as a `.drawio` file
+1. Read `components/index.json` to identify which categories contain the needed components
+2. Read only the relevant category files (e.g., `components/networking.json`, `components/compute.json`)
+3. Extract the `style` strings for the specific components needed
+4. Generate `.drawio` XML following the structure and rules below
+5. Save the output as a `.drawio` file
 
 When editing an existing `.drawio` file:
 
@@ -201,35 +205,60 @@ Service 3:    x=920, y=320, w=60,   h=60
 
 ---
 
-## Using oci_components.json
+## Using Component Files (Staged Loading)
 
-Read `components/oci_components.json` to get the `style` for each component:
+To minimize context usage, load components in two stages instead of reading the full 1.5MB dictionary:
+
+### Stage 1: Read the index
+
+Read `components/index.json` — a lightweight (~5KB) mapping of component name → category:
+
+```json
+{
+  "VCN": "networking",
+  "Load Balancer": "networking",
+  "VM Instance": "compute",
+  "Autonomous Database": "database",
+  ...
+}
+```
+
+### Stage 2: Read only needed categories
+
+Based on the components you need, read only the relevant category files:
 
 ```python
 import json
 
-with open("components/oci_components.json") as f:
-    components = json.load(f)
-
-# Get style for a Load Balancer
-lb_style = components["Load Balancer"]["style"]
+# For a 3-tier web app, you need networking + compute + database
+for cat in ["networking", "compute", "database"]:
+    with open(f"components/{cat}.json") as f:
+        cat_components = json.load(f)
+    # Extract styles for needed components
+    lb_style = cat_components["Load Balancer"]["style"]
 ```
 
-Available component keys (non-exhaustive):
+### Available categories
 
-**Networking:** VCN, Subnet, Internet Gateway, NAT Gateway, Service Gateway, DRG, Load Balancer, Network Load Balancer, DNS, FastConnect, VPN
+| Category file | Examples |
+|---------------|----------|
+| `networking.json` | VCN, Internet Gateway, NAT Gateway, Service Gateway, DRG, Load Balancer, Network Load Balancer, DNS, FastConnect, VPN |
+| `compute.json` | VM Instance, Bare Metal, Autoscaling, Instance Pools, Functions |
+| `database.json` | Autonomous Database, MySQL HeatWave, DB System, Exadata |
+| `storage.json` | Object Storage, Block Volume, File Storage, Buckets |
+| `security.json` | WAF, Network Firewall, Vault, Bastion, IAM |
+| `container.json` | OKE, Container Instances, OCIR |
+| `monitoring.json` | Streaming, Notifications, Logging, Monitoring |
+| `developer.json` | DevOps, API Gateway, Resource Manager |
+| `ai.json` | Data Science, Data Flow, AI Services |
+| `applications.json` | Integration, Visual Builder |
+| `governance.json` | Cost Management, Compartments |
+| `hybrid.json` | Hybrid/Multicloud services |
+| `migration.json` | Migration services |
 
-**Compute:** VM Instance, Bare Metal, Autoscaling, Instance Pools, Functions
+### Fallback: Full dictionary
 
-**Database:** Autonomous Database, MySQL HeatWave, DB System, Exadata
-
-**Storage:** Object Storage, Block Volume, File Storage, Buckets
-
-**Security:** WAF, Network Firewall, Vault, Bastion, IAM
-
-**Container:** OKE, Container Instances, OCIR
-
-**Monitoring:** Streaming, Notifications, Logging, Monitoring
+`components/oci_components.json` (1.5MB) is still available for backward compatibility. Use it only when you need to search across all categories at once
 
 ---
 
