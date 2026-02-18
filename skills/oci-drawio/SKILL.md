@@ -337,6 +337,55 @@ Available component keys (non-exhaustive):
 
 ---
 
+## Important: SVG Base64 Size and Output Limits
+
+### MUST: Use oci_components.json styles
+
+When generating .drawio XML, **always** copy the `style` string from `oci_components.json` as-is.
+**NEVER** embed raw SVG files or generate base64 data independently — the components dictionary
+already contains optimized, metadata-stripped base64 strings.
+
+### Why this matters
+
+Oracle's official OCI icon SVGs contain XMP metadata (`<metadata>` blocks) that inflate
+base64 strings by 3-4x. A single unoptimized icon can exceed 4,000 characters in the style
+attribute, causing:
+- Output token limits to be reached before the XML is complete
+- Truncated .drawio files that fail to open (`AttValue: ' expected` errors)
+- draw.io performance issues
+
+### If setup.sh has not been run
+
+If `oci_components.json` contains `{{RUN_SETUP_SH}}` placeholders, you **must** run
+`setup.sh` first. Do NOT attempt to embed SVG data yourself.
+
+### CRITICAL: Data URI format for draw.io
+
+draw.io's style parser uses `;` as the delimiter between key=value pairs. Therefore, the standard
+`data:image/svg+xml;base64,XXXX` format **breaks** because `;base64` is interpreted as a style
+separator, truncating the image data.
+
+**Correct format** (used by `oci_components.json`):
+```
+image=data:image/svg+xml,XXXX
+```
+
+**Wrong format** (icons will NOT render):
+```
+image=data:image/svg+xml;base64,XXXX
+```
+
+If you ever need to construct a data URI manually, always omit `;base64` — draw.io infers
+the encoding from the content.
+
+### Output size guideline
+
+- Target: total .drawio XML under 25KB
+- Each icon's base64 style string should be under 1,000 characters after metadata stripping
+- If the diagram has many components (15+), verify the total output will fit within token limits
+
+---
+
 ## Output
 
 - Save files with `.drawio` extension

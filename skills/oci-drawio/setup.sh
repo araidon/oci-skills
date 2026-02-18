@@ -208,8 +208,11 @@ NAME_OVERRIDES = {
     "bastion": "Bastion",
     "iam": "IAM",
     "containerengine": "OKE",
+    "containerengineforkubernetes": "OKE",
     "oke": "OKE",
     "containerinstances": "Container Instances",
+    "containerinstance": "Container Instances",
+    "containers": "Container Instances",
     "containerregistry": "OCIR",
     "ocir": "OCIR",
     "dns": "DNS",
@@ -255,6 +258,8 @@ def filename_to_key(filename):
     name = Path(filename).stem
     # Remove common prefixes/suffixes
     name = re.sub(r'^oci[_-]?', '', name, flags=re.IGNORECASE)
+    # Remove color variant suffixes
+    name = re.sub(r'[_-]?(red|white|grey|gray|black|colored?)$', '', name, flags=re.IGNORECASE)
     return name.lower().replace(" ", "").replace("-", "").replace("_", "")
 
 def filename_to_display(filename):
@@ -271,12 +276,38 @@ def filename_to_display(filename):
     name = re.sub(r'^OCI\s+', '', name)
     return name.strip()
 
+def strip_svg_metadata(svg_text):
+    """Remove metadata, XML declarations, and comments from SVG to reduce size by ~75%."""
+    # Remove XML declaration
+    svg_text = re.sub(r'<\?xml[^?]*\?>\s*', '', svg_text)
+    # Remove metadata block (contains XMP data)
+    svg_text = re.sub(r'<metadata>.*?</metadata>', '', svg_text, flags=re.DOTALL)
+    # Remove XML comments
+    svg_text = re.sub(r'<!--.*?-->', '', svg_text, flags=re.DOTALL)
+    # Remove unnecessary whitespace between tags
+    svg_text = re.sub(r'>\s+<', '><', svg_text)
+    return svg_text.strip()
+
 def svg_to_base64_data_uri(svg_path):
-    """Read an SVG file and return a base64 data URI."""
+    """Read an SVG file, strip metadata, and return a base64 data URI."""
     with open(svg_path, 'rb') as f:
-        svg_data = f.read()
-    b64 = base64.b64encode(svg_data).decode('ascii')
-    return f"data:image/svg+xml;base64,{b64}"
+        raw = f.read()
+    # Decode with fallback for non-UTF-8 SVGs
+    for enc in ('utf-8', 'latin-1'):
+        try:
+            svg_text = raw.decode(enc)
+            break
+        except UnicodeDecodeError:
+            continue
+    else:
+        # Last resort: decode ignoring errors
+        svg_text = raw.decode('utf-8', errors='ignore')
+    svg_text = strip_svg_metadata(svg_text)
+    b64 = base64.b64encode(svg_text.encode('utf-8')).decode('ascii')
+    # Use "data:image/svg+xml," (without ";base64") for draw.io compatibility.
+    # draw.io's style parser uses ";" as delimiter, so ";base64" breaks the image= value.
+    # draw.io treats the content after "," as base64 regardless of the explicit marker.
+    return f"data:image/svg+xml,{b64}"
 
 def build_style(data_uri):
     """Build a draw.io style string for an image shape."""
@@ -299,6 +330,9 @@ for dirpath, dirnames, filenames in os.walk(svg_root):
 
     for fname in sorted(filenames):
         if not fname.lower().endswith('.svg'):
+            continue
+        # Skip macOS resource fork files
+        if fname.startswith('._'):
             continue
 
         full_path = Path(dirpath) / fname
