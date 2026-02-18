@@ -1,0 +1,290 @@
+{
+  "VCN": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "networking",
+    "description": "Virtual Cloud Network",
+    "svg_file": "VirtualCloudNetworkVCN.svg"
+  },
+  "Subnet": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "networking",
+    "description": "Subnet (Public / Private)",
+    "svg_file": "Subnet.svg"
+  },
+  "Internet Gateway": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "networking",
+    "description": "Internet Gateway (IGW)",
+    "svg_file": "InternetGateway.svg"
+  },
+  "NAT Gateway": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "networking",
+    "description": "NAT Gateway",
+    "svg_file": "NATGateway.svg"
+  },
+  "Service Gateway": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "networking",
+    "description": "Service Gateway (SGW)",
+    "svg_file": "ServiceGateway.svg"
+  },
+  "DRG": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "networking",
+    "description": "Dynamic Routing Gateway (DRG)",
+    "svg_file": "DynamicRoutingGatewayDRG.svg"
+  },
+  "Load Balancer": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "networking",
+    "description": "Load Balancer (LB)",
+    "svg_file": "LoadBalancerLB.svg"
+  },
+  "Network Load Balancer": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "networking",
+    "description": "Network Load Balancer (NLB)",
+    "svg_file": "NetworkLoadBalancerNLB.svg"
+  },
+  "DNS": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "networking",
+    "description": "DNS",
+    "svg_file": "DNS.svg"
+  },
+  "FastConnect": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "networking",
+    "description": "FastConnect",
+    "svg_file": "FastConnect.svg"
+  },
+  "VPN": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "networking",
+    "description": "VPN Connect",
+    "svg_file": "VPN.svg"
+  },
+  "VM Instance": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "compute",
+    "description": "Virtual Machine Instance",
+    "svg_file": "VirtualMachine.svg"
+  },
+  "Bare Metal": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "compute",
+    "description": "Bare Metal Compute",
+    "svg_file": "BareMetalCompute.svg"
+  },
+  "Autoscaling": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "compute",
+    "description": "Autoscaling Configuration",
+    "svg_file": "Autoscaling.svg"
+  },
+  "Instance Pools": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "compute",
+    "description": "Instance Pools",
+    "svg_file": "InstancePools.svg"
+  },
+  "Functions": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "compute",
+    "description": "Oracle Functions (Serverless)",
+    "svg_file": "Functions.svg"
+  },
+  "Autonomous Database": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "database",
+    "description": "Autonomous Database (ATP/ADW)",
+    "svg_file": "AutonomousDatabase.svg"
+  },
+  "MySQL HeatWave": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "database",
+    "description": "MySQL Database System (HeatWave)",
+    "svg_file": "MySQLDatabaseSystem.svg"
+  },
+  "DB System": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "database",
+    "description": "Database System (Oracle DB)",
+    "svg_file": "DatabaseSystem.svg"
+  },
+  "Exadata": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "database",
+    "description": "Exadata Cloud Service",
+    "svg_file": "Exadata.svg"
+  },
+  "Object Storage": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "storage",
+    "description": "Object Storage",
+    "svg_file": "ObjectStorage.svg"
+  },
+  "Block Volume": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "storage",
+    "description": "Block Volume",
+    "svg_file": "BlockStorage.svg"
+  },
+  "File Storage": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "storage",
+    "description": "File Storage Service",
+    "svg_file": "FileStorage.svg"
+  },
+  "Buckets": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "storage",
+    "description": "Object Storage Bucket",
+    "svg_file": "Buckets.svg"
+  },
+  "WAF": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "security",
+    "description": "Web Application Firewall (WAF)",
+    "svg_file": "WebApplicationFirewallWAF.svg"
+  },
+  "Network Firewall": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "security",
+    "description": "OCI Network Firewall",
+    "svg_file": "Firewall.svg"
+  },
+  "Vault": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "security",
+    "description": "Vault (Key Management)",
+    "svg_file": "Vault.svg"
+  },
+  "Bastion": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "security",
+    "description": "Bastion Service",
+    "svg_file": "Bastion.svg"
+  },
+  "IAM": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "security",
+    "description": "Identity and Access Management",
+    "svg_file": "IAM.svg"
+  },
+  "OKE": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "container",
+    "description": "Oracle Container Engine for Kubernetes (OKE)",
+    "svg_file": "ContainerEngine.svg"
+  },
+  "Container Instances": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "container",
+    "description": "Container Instances",
+    "svg_file": "ContainerInstances.svg"
+  },
+  "OCIR": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "container",
+    "description": "OCI Container Image Registry (OCIR)",
+    "svg_file": "ContainerRegistry.svg"
+  },
+  "Streaming": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "monitoring",
+    "description": "Streaming Service",
+    "svg_file": "Streaming.svg"
+  },
+  "Notifications": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "monitoring",
+    "description": "Notifications Service",
+    "svg_file": "Notifications.svg"
+  },
+  "Logging": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "monitoring",
+    "description": "Logging Service",
+    "svg_file": "Logging.svg"
+  },
+  "Monitoring": {
+    "style": "shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,{{RUN_SETUP_SH}};",
+    "width": 60,
+    "height": 60,
+    "category": "monitoring",
+    "description": "Monitoring Service",
+    "svg_file": "Monitoring.svg"
+  }
+}
