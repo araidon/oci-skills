@@ -184,7 +184,7 @@ NAME_OVERRIDES = {
     "loadbalancer": "Load Balancer",
     "networkloadbalancernlb": "Network Load Balancer",
     "virtualmachine": "VM Instance",
-    "virtualmachinevm": "VM Instance",
+    "virtualmachinevm": "VM (Desktop)",
     "baremetalcompute": "Bare Metal",
     "baremetal": "Bare Metal",
     "autoscaling": "Autoscaling",

@@ -73,7 +73,7 @@ Every `.drawio` file follows this structure:
 
 **Connection (line):**
 ```xml
-<mxCell id="conn-1" style="endArrow=none;startArrow=none;" edge="1" source="igw-1" target="lb-1" parent="1">
+<mxCell id="conn-1" style="endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;edgeStyle=orthogonalEdgeStyle;" edge="1" source="lb-1" target="app-1" parent="1">
   <mxGeometry relative="1" as="geometry"/>
 </mxCell>
 ```
@@ -98,22 +98,17 @@ Connections always use `parent="1"` (root).
 
 ### Region
 ```
-rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#D04A02;fillColor=#FFFFFF;dashed=0;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=14;
+rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#878787;fillColor=#FFFFFF;dashed=0;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=14;fontColor=#000000;
 ```
 
 ### VCN
 ```
-rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#878787;fillColor=#F5F5F5;dashed=0;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=12;
+rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#D04A02;fillColor=none;dashed=1;dashPattern=8 4;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=12;fontColor=#D04A02;
 ```
 
-### Public Subnet
+### Subnet (Public/Private 共通 — ラベルで区別)
 ```
-rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#878787;fillColor=#FFFFFF;dashed=0;verticalAlign=top;align=left;spacingLeft=10;fontSize=11;
-```
-
-### Private Subnet
-```
-rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#878787;fillColor=#EFEFEF;dashed=0;verticalAlign=top;align=left;spacingLeft=10;fontSize=11;
+rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#D04A02;fillColor=none;dashed=1;dashPattern=8 4;verticalAlign=top;align=left;spacingLeft=10;fontSize=11;fontColor=#D04A02;
 ```
 
 ---
@@ -122,43 +117,41 @@ rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#878787;fillColor=#EFEFEF
 
 ### Hierarchy (AD notation is not needed)
 
+Subnets span the full width of the VCN and are stacked vertically (Edge/App/Data layers).
+
 ```
-┌─ Region ──────────────────────────────────────────────────────┐
-│  ┌─ VCN ──────────────────────────────────┐                   │
-│  │                                         │                   │
-│ [IGW]  ┌─ Public Subnet ─────────────┐   [SGW]  [Object Storage]│
-│ [NAT]  │  [LB]  [Bastion]  ...       │    │     [Vault]        │
-│ [DRG]  └─────────────────────────────┘    │     [OCIR]         │
-│  │     ┌─ Private Subnet ────────────┐    │     [Streaming]    │
-│  │     │  [App]  [DB]  ...           │    │     ...            │
-│  │     └─────────────────────────────┘    │                   │
-│  └─────────────────────────────────────────┘                   │
-└───────────────────────────────────────────────────────────────┘
+┌─ Region (実線グレー) ───────────────────────────────────────────┐
+│                                                                │
+│  ┌─ VCN (破線オレンジ) ────────────────────────┐   [Regional    │
+│  │                                             │    Services]  │
+│  │  ┌─ Edge Subnet (破線オレンジ) ──────────┐  │   [OSN]       │
+│  │  │  [LB]  [Bastion]  ...                │  │   [OCIR]      │
+│  │  └──────────────────────────────────────┘  │               │
+│  │  ┌─ App Subnet ─────────────────────────┐  │               │
+│  │  │  [App]  [App]  [App]  ...            │  │               │
+│  │  └──────────────────────────────────────┘  │               │
+│  │  ┌─ Data Subnet ────────────────────────┐  │               │
+│  │  │  [DB]  ...                           │  │               │
+│  │  └──────────────────────────────────────┘  │               │
+│  └──────────────────────────────────────────┘                 │
+└────────────────────────────────────────────────────────────────┘
 ```
 
-### Gateway Placement
+### Gateway / Connectivity
 
-| Gateway           | Position                                |
-|--------------------|-----------------------------------------|
-| Internet Gateway   | VCN left border (straddle the border)   |
-| NAT Gateway        | VCN left border (below IGW)             |
-| DRG                | VCN left border (below NAT)             |
-| Service Gateway    | VCN right border (straddle the border)  |
-
-Gateway icons are placed so their center aligns with the VCN border line.
+In the Oracle official style, gateway **icons** are not placed straddling the VCN border. Instead, connection lines pass directly through VCN and Subnet boundaries. However, if the diagram needs to explicitly show gateways (IGW, NAT, DRG, SGW), place them as icons inside the VCN near the relevant border.
 
 ### Regional Services (outside VCN)
 
-Services not inside VCN are placed inside the Region box, to the right of the VCN, stacked vertically starting next to the Service Gateway.
+Services not inside VCN are placed inside the Region box, to the right of the VCN, stacked vertically.
 
 Examples: Object Storage, Vault, Autonomous Database (without private endpoint), OCIR, Streaming, Notifications, Queue, IAM, Logging, Monitoring.
 
 ### Connection Lines
 
-- No arrowheads: `endArrow=none;startArrow=none;`
-- IGW/NAT/DRG connect horizontally to services in subnets via the VCN left border
-- SGW connects horizontally to regional services via the VCN right border
-- Line style: `endArrow=none;startArrow=none;`
+- No arrowheads, orthogonal routing: `endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;edgeStyle=orthogonalEdgeStyle;`
+- Connection lines pass through VCN/Subnet boundaries as needed
+- Use `source` and `target` attributes to connect elements
 
 ---
 
@@ -174,24 +167,21 @@ Examples: Object Storage, Vault, Autonomous Database (without private endpoint),
 
 ### Typical Coordinates
 
-For an 1200×700 Region:
+For an 1200×700 Region (subnets span full VCN width, stacked vertically):
 
 ```
 Region:       x=20,  y=20,  w=1200, h=700
 VCN:          x=20,  y=40,  w=860,  h=640   (inside Region, relative coords)
-Public Sub:   x=120, y=40,  w=620,  h=260   (inside VCN, relative)
-Private Sub:  x=120, y=340, w=620,  h=260   (inside VCN, relative)
-IGW:          x=-10, y=80,  w=60,   h=60    (on VCN left border, x=-10 to straddle)
-NAT:          x=-10, y=200, w=60,   h=60
-DRG:          x=-10, y=320, w=60,   h=60
-SGW:          x=820, y=80,  w=60,   h=60    (on VCN right border)
+Edge Sub:     x=20,  y=40,  w=820,  h=170   (inside VCN, relative, full width)
+App Sub:      x=20,  y=230, w=820,  h=200   (inside VCN, relative)
+Data Sub:     x=20,  y=450, w=820,  h=170   (inside VCN, relative)
 ```
 
 Regional services (inside Region, right of VCN):
 ```
 Service 1:    x=920, y=80,  w=60,   h=60    (relative to Region)
-Service 2:    x=920, y=180, w=60,   h=60
-Service 3:    x=920, y=280, w=60,   h=60
+Service 2:    x=920, y=200, w=60,   h=60
+Service 3:    x=920, y=320, w=60,   h=60
 ```
 
 ---
@@ -238,66 +228,55 @@ Available component keys (non-exhaustive):
         <mxCell id="0"/>
         <mxCell id="1" parent="0"/>
 
-        <!-- Region -->
-        <mxCell id="region-1" value="Japan East (Tokyo)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#D04A02;fillColor=#FFFFFF;dashed=0;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+        <!-- Region (実線グレー、白背景) -->
+        <mxCell id="region-1" value="Japan East (Tokyo)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#878787;fillColor=#FFFFFF;dashed=0;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=14;fontColor=#000000;" vertex="1" parent="1">
           <mxGeometry x="20" y="20" width="1200" height="700" as="geometry"/>
         </mxCell>
 
-        <!-- VCN -->
-        <mxCell id="vcn-1" value="VCN (10.0.0.0/16)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#878787;fillColor=#F5F5F5;dashed=0;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=12;" vertex="1" parent="region-1">
+        <!-- VCN (破線オレンジ、透明背景) -->
+        <mxCell id="vcn-1" value="VCN (10.0.0.0/16)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#D04A02;fillColor=none;dashed=1;dashPattern=8 4;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=12;fontColor=#D04A02;" vertex="1" parent="region-1">
           <mxGeometry x="20" y="40" width="860" height="640" as="geometry"/>
         </mxCell>
 
-        <!-- Public Subnet -->
-        <mxCell id="subnet-pub-1" value="Public Subnet (10.0.1.0/24)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#878787;fillColor=#FFFFFF;dashed=0;verticalAlign=top;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="vcn-1">
-          <mxGeometry x="120" y="40" width="620" height="260" as="geometry"/>
+        <!-- Edge Subnet (破線オレンジ、全幅) -->
+        <mxCell id="subnet-edge-1" value="Edge Subnet (10.0.1.0/24)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#D04A02;fillColor=none;dashed=1;dashPattern=8 4;verticalAlign=top;align=left;spacingLeft=10;fontSize=11;fontColor=#D04A02;" vertex="1" parent="vcn-1">
+          <mxGeometry x="20" y="40" width="820" height="170" as="geometry"/>
         </mxCell>
 
-        <!-- Private Subnet -->
-        <mxCell id="subnet-priv-1" value="Private Subnet (10.0.2.0/24)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#878787;fillColor=#EFEFEF;dashed=0;verticalAlign=top;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="vcn-1">
-          <mxGeometry x="120" y="340" width="620" height="260" as="geometry"/>
+        <!-- App Subnet (破線オレンジ、全幅) -->
+        <mxCell id="subnet-app-1" value="App Subnet (10.0.2.0/24)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#D04A02;fillColor=none;dashed=1;dashPattern=8 4;verticalAlign=top;align=left;spacingLeft=10;fontSize=11;fontColor=#D04A02;" vertex="1" parent="vcn-1">
+          <mxGeometry x="20" y="230" width="820" height="200" as="geometry"/>
         </mxCell>
 
-        <!-- Gateways (use styles from oci_components.json) -->
-        <!-- IGW on VCN left border -->
-        <mxCell id="igw-1" value="Internet Gateway" style="{{Internet Gateway style}}" vertex="1" parent="vcn-1">
-          <mxGeometry x="-10" y="80" width="60" height="60" as="geometry"/>
+        <!-- Data Subnet (破線オレンジ、全幅) -->
+        <mxCell id="subnet-data-1" value="Data Subnet (10.0.3.0/24)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#D04A02;fillColor=none;dashed=1;dashPattern=8 4;verticalAlign=top;align=left;spacingLeft=10;fontSize=11;fontColor=#D04A02;" vertex="1" parent="vcn-1">
+          <mxGeometry x="20" y="450" width="820" height="170" as="geometry"/>
         </mxCell>
 
-        <!-- NAT on VCN left border -->
-        <mxCell id="nat-1" value="NAT Gateway" style="{{NAT Gateway style}}" vertex="1" parent="vcn-1">
-          <mxGeometry x="-10" y="200" width="60" height="60" as="geometry"/>
+        <!-- Load Balancer in Edge Subnet -->
+        <mxCell id="lb-1" value="Load Balancer" style="{{Load Balancer style}}" vertex="1" parent="subnet-edge-1">
+          <mxGeometry x="60" y="60" width="60" height="60" as="geometry"/>
         </mxCell>
 
-        <!-- SGW on VCN right border -->
-        <mxCell id="sgw-1" value="Service Gateway" style="{{Service Gateway style}}" vertex="1" parent="vcn-1">
-          <mxGeometry x="820" y="80" width="60" height="60" as="geometry"/>
+        <!-- Bastion in Edge Subnet -->
+        <mxCell id="bastion-1" value="Bastion" style="{{Bastion style}}" vertex="1" parent="subnet-edge-1">
+          <mxGeometry x="220" y="60" width="60" height="60" as="geometry"/>
         </mxCell>
 
-        <!-- Load Balancer in Public Subnet -->
-        <mxCell id="lb-1" value="Load Balancer" style="{{Load Balancer style}}" vertex="1" parent="subnet-pub-1">
-          <mxGeometry x="60" y="100" width="60" height="60" as="geometry"/>
+        <!-- App Servers in App Subnet -->
+        <mxCell id="app-1" value="App Server 1" style="{{VM Instance style}}" vertex="1" parent="subnet-app-1">
+          <mxGeometry x="60" y="70" width="60" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="app-2" value="App Server 2" style="{{VM Instance style}}" vertex="1" parent="subnet-app-1">
+          <mxGeometry x="220" y="70" width="60" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="app-3" value="App Server 3" style="{{VM Instance style}}" vertex="1" parent="subnet-app-1">
+          <mxGeometry x="380" y="70" width="60" height="60" as="geometry"/>
         </mxCell>
 
-        <!-- Web Servers in Public Subnet -->
-        <mxCell id="web-1" value="Web Server 1" style="{{VM Instance style}}" vertex="1" parent="subnet-pub-1">
-          <mxGeometry x="220" y="100" width="60" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="web-2" value="Web Server 2" style="{{VM Instance style}}" vertex="1" parent="subnet-pub-1">
-          <mxGeometry x="340" y="100" width="60" height="60" as="geometry"/>
-        </mxCell>
-
-        <!-- App Servers in Private Subnet -->
-        <mxCell id="app-1" value="App Server 1" style="{{VM Instance style}}" vertex="1" parent="subnet-priv-1">
-          <mxGeometry x="60" y="100" width="60" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="app-2" value="App Server 2" style="{{VM Instance style}}" vertex="1" parent="subnet-priv-1">
-          <mxGeometry x="180" y="100" width="60" height="60" as="geometry"/>
-        </mxCell>
-
-        <!-- Database in Private Subnet -->
-        <mxCell id="db-1" value="Oracle DB" style="{{Autonomous Database style}}" vertex="1" parent="subnet-priv-1">
-          <mxGeometry x="400" y="100" width="60" height="60" as="geometry"/>
+        <!-- Database in Data Subnet -->
+        <mxCell id="db-1" value="Oracle DB" style="{{Autonomous Database style}}" vertex="1" parent="subnet-data-1">
+          <mxGeometry x="60" y="60" width="60" height="60" as="geometry"/>
         </mxCell>
 
         <!-- Regional Service: Object Storage -->
@@ -305,26 +284,23 @@ Available component keys (non-exhaustive):
           <mxGeometry x="920" y="80" width="60" height="60" as="geometry"/>
         </mxCell>
 
-        <!-- Connections (no arrows) -->
-        <mxCell id="conn-1" style="endArrow=none;startArrow=none;" edge="1" source="igw-1" target="lb-1" parent="1">
+        <!-- Connections (arrows) -->
+        <mxCell id="conn-1" style="endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;edgeStyle=orthogonalEdgeStyle;" edge="1" source="lb-1" target="app-1" parent="1">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="conn-2" style="endArrow=none;startArrow=none;" edge="1" source="lb-1" target="web-1" parent="1">
+        <mxCell id="conn-2" style="endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;edgeStyle=orthogonalEdgeStyle;" edge="1" source="lb-1" target="app-2" parent="1">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="conn-3" style="endArrow=none;startArrow=none;" edge="1" source="lb-1" target="web-2" parent="1">
+        <mxCell id="conn-3" style="endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;edgeStyle=orthogonalEdgeStyle;" edge="1" source="lb-1" target="app-3" parent="1">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="conn-4" style="endArrow=none;startArrow=none;" edge="1" source="web-1" target="app-1" parent="1">
+        <mxCell id="conn-4" style="endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;edgeStyle=orthogonalEdgeStyle;" edge="1" source="app-1" target="db-1" parent="1">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="conn-5" style="endArrow=none;startArrow=none;" edge="1" source="web-2" target="app-2" parent="1">
+        <mxCell id="conn-5" style="endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;edgeStyle=orthogonalEdgeStyle;" edge="1" source="app-2" target="db-1" parent="1">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="conn-6" style="endArrow=none;startArrow=none;" edge="1" source="app-1" target="db-1" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="conn-7" style="endArrow=none;startArrow=none;" edge="1" source="app-2" target="db-1" parent="1">
+        <mxCell id="conn-6" style="endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;edgeStyle=orthogonalEdgeStyle;" edge="1" source="app-3" target="db-1" parent="1">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
       </root>
