@@ -1,0 +1,119 @@
+<mxfile host="Electron" modified="2024-01-01T00:00:00.000Z" type="device">
+  <diagram id="d1" name="OCI 3-Tier Web Architecture">
+    <mxGraphModel dx="1024" dy="768" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Region -->
+        <mxCell id="region-1" value="Japan East (Tokyo)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#D04A02;fillColor=#FFFFFF;dashed=0;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="1200" height="700" as="geometry"/>
+        </mxCell>
+
+        <!-- VCN -->
+        <mxCell id="vcn-1" value="VCN (10.0.0.0/16)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#878787;fillColor=#F5F5F5;dashed=0;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=12;" vertex="1" parent="region-1">
+          <mxGeometry x="20" y="40" width="860" height="640" as="geometry"/>
+        </mxCell>
+
+        <!-- Public Subnet -->
+        <mxCell id="subnet-pub-1" value="Public Subnet (10.0.1.0/24)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#878787;fillColor=#FFFFFF;dashed=0;verticalAlign=top;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="vcn-1">
+          <mxGeometry x="120" y="40" width="620" height="260" as="geometry"/>
+        </mxCell>
+
+        <!-- Private Subnet -->
+        <mxCell id="subnet-priv-1" value="Private Subnet (10.0.2.0/24)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#878787;fillColor=#EFEFEF;dashed=0;verticalAlign=top;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="vcn-1">
+          <mxGeometry x="120" y="340" width="620" height="260" as="geometry"/>
+        </mxCell>
+
+        <!-- Internet Gateway (VCN left border) -->
+        <mxCell id="igw-1" value="Internet&#xa;Gateway" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiM2ODY4NjgiIHJ4PSI4Ii8+PHRleHQgeD0iMzAiIHk9IjM1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iOSIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPklHVzwvdGV4dD48L3N2Zz4=;" vertex="1" parent="vcn-1">
+          <mxGeometry x="-10" y="80" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- NAT Gateway (VCN left border) -->
+        <mxCell id="nat-1" value="NAT&#xa;Gateway" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiM2ODY4NjgiIHJ4PSI4Ii8+PHRleHQgeD0iMzAiIHk9IjM1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iOSIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5BVDwvdGV4dD48L3N2Zz4=;" vertex="1" parent="vcn-1">
+          <mxGeometry x="-10" y="200" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Service Gateway (VCN right border) -->
+        <mxCell id="sgw-1" value="Service&#xa;Gateway" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiM2ODY4NjgiIHJ4PSI4Ii8+PHRleHQgeD0iMzAiIHk9IjM1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iOSIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlNHVzwvdGV4dD48L3N2Zz4=;" vertex="1" parent="vcn-1">
+          <mxGeometry x="820" y="80" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Load Balancer (Public Subnet) -->
+        <mxCell id="lb-1" value="Load&#xa;Balancer" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiM0MTQxNDEiIHJ4PSI4Ii8+PHRleHQgeD0iMzAiIHk9IjM1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iOCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkxCPC90ZXh0Pjwvc3ZnPg==;" vertex="1" parent="subnet-pub-1">
+          <mxGeometry x="60" y="100" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Bastion (Public Subnet) -->
+        <mxCell id="bastion-1" value="Bastion" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiM0MTQxNDEiIHJ4PSI4Ii8+PHRleHQgeD0iMzAiIHk9IjM1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iNyIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkJhc3Rpb248L3RleHQ+PC9zdmc+;" vertex="1" parent="subnet-pub-1">
+          <mxGeometry x="460" y="100" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Web Server 1 (Public Subnet) -->
+        <mxCell id="web-1" value="Web Server 1" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiM0MTQxNDEiIHJ4PSI4Ii8+PHRleHQgeD0iMzAiIHk9IjM1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iOCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlZNPC90ZXh0Pjwvc3ZnPg==;" vertex="1" parent="subnet-pub-1">
+          <mxGeometry x="220" y="100" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Web Server 2 (Public Subnet) -->
+        <mxCell id="web-2" value="Web Server 2" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiM0MTQxNDEiIHJ4PSI4Ii8+PHRleHQgeD0iMzAiIHk9IjM1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iOCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlZNPC90ZXh0Pjwvc3ZnPg==;" vertex="1" parent="subnet-pub-1">
+          <mxGeometry x="340" y="100" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- App Server 1 (Private Subnet) -->
+        <mxCell id="app-1" value="App Server 1" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiM0MTQxNDEiIHJ4PSI4Ii8+PHRleHQgeD0iMzAiIHk9IjM1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iOCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlZNPC90ZXh0Pjwvc3ZnPg==;" vertex="1" parent="subnet-priv-1">
+          <mxGeometry x="100" y="100" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- App Server 2 (Private Subnet) -->
+        <mxCell id="app-2" value="App Server 2" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiM0MTQxNDEiIHJ4PSI4Ii8+PHRleHQgeD0iMzAiIHk9IjM1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iOCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlZNPC90ZXh0Pjwvc3ZnPg==;" vertex="1" parent="subnet-priv-1">
+          <mxGeometry x="220" y="100" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Database (Private Subnet) -->
+        <mxCell id="db-1" value="Autonomous&#xa;Database" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiM0MTQxNDEiIHJ4PSI4Ii8+PHRleHQgeD0iMzAiIHk9IjM1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iOCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkRCPC90ZXh0Pjwvc3ZnPg==;" vertex="1" parent="subnet-priv-1">
+          <mxGeometry x="420" y="100" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Object Storage (Regional, right of VCN) -->
+        <mxCell id="objst-1" value="Object&#xa;Storage" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiM0MTQxNDEiIHJ4PSI4Ii8+PHRleHQgeD0iMzAiIHk9IjM1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iNyIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk9ialN0PC90ZXh0Pjwvc3ZnPg==;" vertex="1" parent="region-1">
+          <mxGeometry x="940" y="80" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Vault (Regional, right of VCN) -->
+        <mxCell id="vault-1" value="Vault" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=none;labelPosition=center;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiM0MTQxNDEiIHJ4PSI4Ii8+PHRleHQgeD0iMzAiIHk9IjM1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iOCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlZhdWx0PC90ZXh0Pjwvc3ZnPg==;" vertex="1" parent="region-1">
+          <mxGeometry x="940" y="200" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Connections (no arrows) -->
+        <mxCell id="conn-igw-lb" style="endArrow=none;startArrow=none;" edge="1" source="igw-1" target="lb-1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="conn-lb-web1" style="endArrow=none;startArrow=none;" edge="1" source="lb-1" target="web-1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="conn-lb-web2" style="endArrow=none;startArrow=none;" edge="1" source="lb-1" target="web-2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="conn-web1-app1" style="endArrow=none;startArrow=none;" edge="1" source="web-1" target="app-1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="conn-web2-app2" style="endArrow=none;startArrow=none;" edge="1" source="web-2" target="app-2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="conn-app1-db" style="endArrow=none;startArrow=none;" edge="1" source="app-1" target="db-1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="conn-app2-db" style="endArrow=none;startArrow=none;" edge="1" source="app-2" target="db-1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="conn-sgw-objst" style="endArrow=none;startArrow=none;" edge="1" source="sgw-1" target="objst-1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="conn-sgw-vault" style="endArrow=none;startArrow=none;" edge="1" source="sgw-1" target="vault-1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
