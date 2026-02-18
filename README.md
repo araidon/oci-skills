@@ -53,7 +53,8 @@ git clone https://github.com/araidon/oci-skills.git
 cd oci-skills
 
 # 2. スキルをインストール
-./install.sh oci-drawio
+./install.sh oci-drawio                    # Claude Code の場合
+./install.sh oci-drawio --tool codex       # Codex の場合
 ```
 
 ### install.sh のオプション
@@ -101,8 +102,11 @@ cd oci-skills
 ### 実行
 
 ```bash
-cd ~/.claude/skills/oci-drawio    # インストール先に移動
-bash setup.sh
+# Claude Code の場合
+cd ~/.claude/skills/oci-drawio && bash setup.sh
+
+# Codex の場合
+cd ~/.codex/skills/oci-drawio && bash setup.sh
 ```
 
 セットアップが完了すると以下が生成されます：
@@ -116,7 +120,9 @@ bash setup.sh
 
 インストールとセットアップが完了すれば、AI アシスタントに指示するだけで構成図を生成できます。
 
-### Claude Code での例
+### 構成図の生成（Claude Code / Codex 共通）
+
+インストール済みの AI アシスタントに、以下のように指示するだけで構成図が生成されます。
 
 ```
 > OCI上に3層Webアプリの構成図を描いてください。
