@@ -423,3 +423,33 @@ the encoding from the content.
 - Save files with `.drawio` extension
 - The file can be opened directly in [draw.io desktop](https://github.com/jgraph/drawio-desktop) or [draw.io web](https://app.diagrams.net/)
 - Default save location: current working directory, or as specified by the user
+
+### 設計ポイントの解説（必須）
+
+drawioファイルの生成・編集が完了したら、必ず **設計ポイントの解説** をテキストで出力すること。
+
+#### 自然言語からの新規作成時
+
+以下の観点でポイントをまとめる：
+
+- **階層設計**: Region/VCN/Subnetの分割理由
+- **ネットワーク設計**: Gateway選定（IGW/NAT/DRG/SGW）の理由、接続パターン
+- **コンポーネント配置**: 各サービスの選定理由と役割
+- **セキュリティ設計**: Bastion、WAF、Vaultなどの採用理由
+- **可用性・冗長化**: マルチAD、ロードバランサーなどの設計判断
+
+#### AWS/Azure画像からの変換時
+
+上記に加えて、以下を必ず含める：
+
+- **サービスマッピング表**: 元クラウドのサービス → OCIサービスの対応表（Markdown表形式）
+- **アーキテクチャパターンの変換**: 元の設計パターンがOCIでどう表現されるか（例: マルチアカウント → マルチコンパートメント、Transit Gateway → DRG）
+- **OCI固有の最適化**: OCIのマネージドサービスに置き換えた箇所とその理由（例: EC2 Bastion → OCI Bastionサービス）
+- **差異・注意点**: 1:1対応しないサービスや、OCI側で構成が変わる箇所の説明
+
+#### フォーマット
+
+- 番号付きリストで主要ポイントを列挙
+- 各ポイントに見出し（太字）＋説明文
+- サービスマッピングはMarkdown表を使用
+- 簡潔だが具体的に（各ポイント2-3文程度）
