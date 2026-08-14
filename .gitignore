@@ -1,2 +1,6 @@
 CLAUDE.md
 .DS_Store
+
+# setup.sh の生成物のうち、カテゴリ別ファイルと完全に重複するため管理しない
+skills/*/components/oci_components.json
+skills/*/.tmp/
