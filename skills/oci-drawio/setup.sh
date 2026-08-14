@@ -180,84 +180,18 @@ CATEGORY_MAP = {
 }
 
 # ── Name normalization: filename -> human-readable name ──
-# Map of known filename patterns to preferred display names
-NAME_OVERRIDES = {
-    "virtualcloudnetworkvcn": "VCN",
-    "virtualcloudnetwork": "VCN",
-    "vcn": "VCN",
-    "internetgateway": "Internet Gateway",
-    "natgateway": "NAT Gateway",
-    "servicegateway": "Service Gateway",
-    "dynamicroutinggatewaydrg": "DRG",
-    "dynamicroutinggateway": "DRG",
-    "drg": "DRG",
-    "loadbalancerlb": "Load Balancer",
-    "loadbalancer": "Load Balancer",
-    "networkloadbalancernlb": "Network Load Balancer",
-    "virtualmachine": "VM Instance",
-    "virtualmachinevm": "VM (Desktop)",
-    "baremetalcompute": "Bare Metal",
-    "baremetal": "Bare Metal",
-    "autoscaling": "Autoscaling",
-    "functions": "Functions",
-    "instancepools": "Instance Pools",
-    "autonomousdatabase": "Autonomous Database",
-    "mysqldatabasesystem": "MySQL HeatWave",
-    "mysql": "MySQL HeatWave",
-    "dbsystem": "DB System",
-    "databasesystem": "DB System",
-    "objectstorage": "Object Storage",
-    "blockstorage": "Block Volume",
-    "blockvolume": "Block Volume",
-    "filestorage": "File Storage",
-    "buckets": "Buckets",
-    "webapplicationfirewallwaf": "WAF",
-    "waf": "WAF",
-    "firewall": "Network Firewall",
-    "vault": "Vault",
-    "keymanagement": "Key Management",
-    "bastion": "Bastion",
-    "iam": "IAM",
-    "containerengine": "OKE",
-    "containerengineforkubernetes": "OKE",
-    "oke": "OKE",
-    "containerinstances": "Container Instances",
-    "containerinstance": "Container Instances",
-    "containers": "Container Instances",
-    "containerregistry": "OCIR",
-    "ocir": "OCIR",
-    "dns": "DNS",
-    "cdn": "CDN",
-    "emaildelivery": "Email Delivery",
-    "streaming": "Streaming",
-    "notifications": "Notifications",
-    "queue": "Queue",
-    "logging": "Logging",
-    "monitoring": "Monitoring",
-    "events": "Events",
-    "audit": "Audit",
-    "dataflow": "Data Flow",
-    "datascience": "Data Science",
-    "datasafe": "Data Safe",
-    "exadata": "Exadata",
-    "goldengate": "GoldenGate",
-    "vnic": "VNIC",
-    "routetable": "Route Table",
-    "securitylist": "Security List",
-    "securitylists": "Security List",
-    "networksecuritygroupnsg": "NSG",
-    "fastconnect": "FastConnect",
-    "vpn": "VPN",
-    "storagegateway": "Storage Gateway",
-    "backuprestore": "Backup/Restore",
-    "elasticperformance": "Elastic Performance",
-    "certificates": "Certificates",
-    "encryption": "Encryption",
-    "flexvirtualmachinevm": "Flex VM",
-    "burstablevirtualmachinevm": "Burstable VM",
-    "virtualmachinegpu": "VM GPU",
-    "persistentvolume": "Persistent Volume",
-}
+# 表示名の単一情報源は components/name_overrides.json（filename_key -> 表示名）。
+# ここに無いものだけ PascalCase 分割にフォールバックする。
+NAME_OVERRIDES_PATH = Path(components_json_path).parent / "name_overrides.json"
+if NAME_OVERRIDES_PATH.exists():
+    with open(NAME_OVERRIDES_PATH, encoding="utf-8") as f:
+        NAME_OVERRIDES = {k: v for k, v in json.load(f).items() if not k.startswith("_")}
+    print(f"Loaded {len(NAME_OVERRIDES)} name overrides from {NAME_OVERRIDES_PATH}",
+          file=sys.stderr)
+else:
+    NAME_OVERRIDES = {}
+    print(f"WARNING: {NAME_OVERRIDES_PATH} not found; falling back to auto-generated names",
+          file=sys.stderr)
 
 def normalize_category(dirname):
     """Map directory name to a normalized category."""
