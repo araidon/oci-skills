@@ -67,8 +67,10 @@ OCIR / Streaming / Notifications / Queuing / IAM / Logging / Monitoring など�
 | 行送り（折り返し時） | 110 px |
 | 1行に並べる上限 | 5 個（超えたら折り返す） |
 | コンテナ内側の余白 | 20 px |
+| VCN 左側の余白（左枠線にGWがある場合） | 60 px |
 | コンテナ上部のラベル余白 | 40 px |
 | サブネット間の間隔 | 20 px |
+| Region 外の要素の左端 | 80 px |
 | ラベル位置 | アイコンの下 |
 | グリッドスナップ | 10 px |
 
@@ -83,10 +85,34 @@ VCN 幅 = サブネット幅 + 40、最小 500px。
 ## 接続線
 
 ```
-endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;edgeStyle=orthogonalEdgeStyle;
+endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;
+edgeStyle=orthogonalEdgeStyle;rounded=1;arcSize=8;jettySize=20;orthogonalLoop=1;html=1;
+exitX=…;exitY=…;exitDx=0;exitDy=0;entryX=…;entryY=…;entryDx=0;entryDy=0;
 ```
 
 - 矢印は付けない（データフローの向きを主張しない）
-- 直交ルーティング
-- VCN / Subnet の枠線を跨いでよい
+- 直交ルーティング、角は丸める（`rounded=1;arcSize=8`）
 - `source` / `target` で要素同士を結ぶ（座標で線を引かない）
+- VCN / Subnet の枠線は跨いでよいが、**無関係なアイコンは貫通しない**
+
+### 出入口と折れ点
+
+draw.io の自動ルーティングに任せると、意図しない辺から線が出たり、間にある
+アイコンを貫通したりする。出入口（`exitX/exitY` `entryX/entryY`）を固定し、
+折れ点を `<Array as="points">` で明示して「まっすぐ出て、直角に曲がって、
+まっすぐ入る」形に揃える。
+
+| 位置関係 | 出入口 | 折れ点 |
+|---|---|---|
+| 上下（別サブネット間など） | 下 `(0.5, 1)` → 上 `(0.5, 0)` | サブネット間の余白を通る2点 |
+| 左右（同じ段） | 右 `(1, 0.5)` → 左 `(0, 0.5)` | 図形間の中間を通る2点 |
+
+`build_drawio.py` は縦配線と横配線の両方を組み立て、**他のアイコンとの衝突が
+少ない方**を選ぶ。同数なら、ずれが大きい方向の配線を採用する。
+
+折れ点は図形から最低 20px（`EDGE_GUTTER`）離す。
+
+### 検証
+
+`validate_drawio.py` が、接続線が端点以外のアイコンを貫通していないかを検査する
+（軸に沿った線分のみ判定。斜めの線分は draw.io 側で引き直されるため対象外）。

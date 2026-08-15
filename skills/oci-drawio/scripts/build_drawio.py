@@ -38,6 +38,9 @@ SUBNET_GAP_Y = 20
 VCN_PAD = 20
 VCN_LABEL_H = 40
 VCN_MIN_W = 500
+# 左枠線にゲートウェイを跨がらせると、そのラベルとサブネット先頭アイコンの
+# ラベルが重なる。ゲートウェイがある場合だけ VCN の左内側を広くとる。
+VCN_PAD_LEFT_WITH_GW = 60
 
 REGION_PAD = 20
 REGION_LABEL_H = 40
@@ -46,6 +49,10 @@ GW_START_Y = 80         # VCN 枠線上の最初のゲートウェイ
 GW_STEP_Y = 120
 SERVICE_COL_GAP = 60    # VCN 右端から地域サービス列までの距離
 SERVICE_COL_W = 160
+# Region 外の要素は、ラベルがページ左端を割らない位置から始める
+EXTERNAL_X = 80
+# 左枠線のゲートウェイのラベル（"Internet Gateway" など）が入る左マージン
+GW_LABEL_MARGIN = 60
 
 STYLE_REGION = (
     "rounded=1;whiteSpace=wrap;html=1;arcSize=0;strokeColor=#878787;fillColor=#FFFFFF;"
@@ -62,10 +69,15 @@ STYLE_SUBNET = (
     "dashed=1;dashPattern=8 4;verticalAlign=top;align=left;spacingLeft=10;fontSize=11;"
     "fontColor=#D04A02;"
 )
+# 直交ルーティング + 角丸。jettySize で図形から一度まっすぐ離れてから曲がる。
 STYLE_EDGE = (
     "endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;"
-    "edgeStyle=orthogonalEdgeStyle;"
+    "edgeStyle=orthogonalEdgeStyle;rounded=1;arcSize=8;"
+    "jettySize=20;orthogonalLoop=1;html=1;"
 )
+
+EDGE_GUTTER = 20        # 図形から折れ点までの最低距離
+V_ROUTE_THRESHOLD = 40  # これ以上縦にずれていたら縦配線とみなす
 
 
 class SpecError(ValueError):
@@ -126,6 +138,7 @@ class DiagramBuilder:
         self.edges = []          # (id, source, target)
         self.nodes = {}          # id -> {"label":..., "component":...}
         self._used_ids = set()
+        self._icon_box_cache = None
 
     # -- id 採番 --
     def _new_id(self, preferred):
@@ -201,12 +214,15 @@ class DiagramBuilder:
         externals = _expand(spec.get("external"))
 
         # 幅: 最も横に長いサブネットに合わせる
+        # 左枠線にゲートウェイがある場合、そのラベルとサブネット先頭アイコンの
+        # ラベルが重ならないよう VCN の左内側を広くとる
+        vcn_pad_left = VCN_PAD_LEFT_WITH_GW if left_gws else VCN_PAD
         max_cols = max([min(len(n), MAX_COLS) for n in subnet_nodes] or [1])
         subnet_w = max(
-            VCN_MIN_W - 2 * VCN_PAD,
+            VCN_MIN_W - vcn_pad_left - VCN_PAD,
             2 * SUBNET_PAD_X + max_cols * ICON + (max_cols - 1) * ICON_GAP_X,
         )
-        vcn_w = subnet_w + 2 * VCN_PAD
+        vcn_w = subnet_w + vcn_pad_left + VCN_PAD
 
         # 高さ: 各サブネットの段数から算出
         subnet_heights = []
@@ -230,9 +246,15 @@ class DiagramBuilder:
             REGION_LABEL_H + GW_START_Y + len(services) * GW_STEP_Y,
         )
 
-        # 図体の外側（オンプレ・インターネットなど）は Region の左に置く
-        ext_w = (SERVICE_COL_W if externals else 0)
-        origin_x = 20 + (ext_w + 40 if externals else 0)
+        # 図体の外側（オンプレ・インターネットなど）は Region の左に置く。
+        # 左枠線のゲートウェイは Region より左へはみ出すので、そのラベルが
+        # ページ左端を割らないよう Region 自体を右にずらす。
+        if externals:
+            origin_x = EXTERNAL_X + SERVICE_COL_W + 40
+        elif left_gws:
+            origin_x = GW_LABEL_MARGIN
+        else:
+            origin_x = 20
 
         region_id = self._add_container(
             "region-1", spec.get("region", "Region"), STYLE_REGION,
@@ -250,7 +272,7 @@ class DiagramBuilder:
             sid = self._add_container(
                 self._new_id(spec_subnet.get("id") or f"subnet-{n}"),
                 spec_subnet.get("label", "Subnet"), STYLE_SUBNET,
-                VCN_PAD, y, subnet_w, height, vcn_id,
+                vcn_pad_left, y, subnet_w, height, vcn_id,
             )
             for i, node in enumerate(nodes):
                 col, row = i % MAX_COLS, i // MAX_COLS
@@ -279,18 +301,126 @@ class DiagramBuilder:
 
         # 外部要素は Region の外（ルート直下）
         for i, ext in enumerate(externals):
-            self._add_icon(ext, 20, 20 + REGION_LABEL_H + i * GW_STEP_Y, "1")
+            self._add_icon(ext, EXTERNAL_X, 20 + REGION_LABEL_H + i * GW_STEP_Y, "1")
 
         for i, edge in enumerate(spec.get("edges") or [], start=1):
             if isinstance(edge, dict):
                 src, dst = edge["from"], edge["to"]
             else:
                 src, dst = edge[0], edge[1]
-            self.edges.append(
-                (f"conn-{i}", self._resolve_endpoint(src), self._resolve_endpoint(dst))
-            )
+            src_id = self._resolve_endpoint(src)
+            dst_id = self._resolve_endpoint(dst)
+            style, points = self._route(src_id, dst_id)
+            self.edges.append((f"conn-{i}", src_id, dst_id, style, points))
 
         return region_w + origin_x + 100, region_h + 120
+
+    # -- 接続線のルーティング --
+    def _abs(self, cid):
+        """親を辿って絶対座標 (x, y, w, h) を求める。"""
+        by_id = {c[0]: c for c in self.cells}
+        x = y = 0.0
+        cur = cid
+        seen = set()
+        w = h = 0.0
+        while cur in by_id and cur not in seen:
+            seen.add(cur)
+            _, _, _, cx, cy, cw, ch, parent = by_id[cur]
+            if cur == cid:
+                w, h = cw, ch
+            x += cx
+            y += cy
+            if parent in (None, "0", "1"):
+                break
+            cur = parent
+        return x, y, w, h
+
+    def _icon_boxes(self):
+        """アイコンの絶対矩形。線がアイコンを貫通していないか調べるために使う。"""
+        if self._icon_box_cache is None:
+            self._icon_box_cache = {cid: self._abs(cid) for cid in self.nodes}
+        return self._icon_box_cache
+
+    @staticmethod
+    def _segments(p0, points, p1):
+        """接続点と折れ点から、軸に沿った線分の列を組み立てる。"""
+        pts = [p0] + list(points) + [p1]
+        return list(zip(pts, pts[1:]))
+
+    def _collisions(self, segments, exclude):
+        """線分がアイコンの矩形を横切る回数。端点のアイコンは除く。"""
+        hits = 0
+        for cid, (bx, by, bw, bh) in self._icon_boxes().items():
+            if cid in exclude:
+                continue
+            for (x1, y1), (x2, y2) in segments:
+                lo_x, hi_x = min(x1, x2), max(x1, x2)
+                lo_y, hi_y = min(y1, y2), max(y1, y2)
+                if lo_x < bx + bw and bx < hi_x and lo_y < by + bh and by < hi_y:
+                    hits += 1
+                    break
+        return hits
+
+    def _candidate(self, vertical, src_box, dst_box):
+        """縦配線 / 横配線それぞれの接続点と折れ点を作る。"""
+        sx, sy, sw, sh = src_box
+        tx, ty, tw, th = dst_box
+        scx, scy = sx + sw / 2, sy + sh / 2
+        tcx, tcy = tx + tw / 2, ty + th / 2
+
+        if vertical:
+            if tcy > scy:
+                exit_xy, entry_xy = (0.5, 1.0), (0.5, 0.0)
+                p0, p1 = (scx, sy + sh), (tcx, ty)
+                gutter = max((sy + sh + ty) / 2, sy + sh + EDGE_GUTTER)
+            else:
+                exit_xy, entry_xy = (0.5, 0.0), (0.5, 1.0)
+                p0, p1 = (scx, sy), (tcx, ty + th)
+                gutter = min((sy + ty + th) / 2, sy - EDGE_GUTTER)
+            points = [(scx, gutter), (tcx, gutter)] if abs(tcx - scx) > 1 else []
+        else:
+            if tcx > scx:
+                exit_xy, entry_xy = (1.0, 0.5), (0.0, 0.5)
+                p0, p1 = (sx + sw, scy), (tx, tcy)
+                gutter = max((sx + sw + tx) / 2, sx + sw + EDGE_GUTTER)
+            else:
+                exit_xy, entry_xy = (0.0, 0.5), (1.0, 0.5)
+                p0, p1 = (sx, scy), (tx + tw, tcy)
+                gutter = min((sx + tx + tw) / 2, sx - EDGE_GUTTER)
+            points = [(gutter, scy), (gutter, tcy)] if abs(tcy - scy) > 1 else []
+
+        return exit_xy, entry_xy, points, self._segments(p0, points, p1)
+
+    def _route(self, src_id, dst_id):
+        """2つの図形の位置関係から、接続点と折れ点を決める。
+
+        draw.io の自動ルーティングに任せると、意図しない辺から線が出たり、
+        関係のないアイコンを貫通したりする。縦配線と横配線の両方を作り、
+        他のアイコンとの衝突が少ない方を採用する。
+        """
+        src_box, dst_box = self._abs(src_id), self._abs(dst_id)
+        dx = abs((dst_box[0] + dst_box[2] / 2) - (src_box[0] + src_box[2] / 2))
+        dy = abs((dst_box[1] + dst_box[3] / 2) - (src_box[1] + src_box[3] / 2))
+
+        best = None
+        for vertical in (True, False):
+            exit_xy, entry_xy, points, segments = self._candidate(
+                vertical, src_box, dst_box
+            )
+            hits = self._collisions(segments, exclude={src_id, dst_id})
+            # 衝突を最優先で避け、同数なら差が大きい方向の配線を選ぶ
+            natural = (dy >= V_ROUTE_THRESHOLD) if vertical else (dx > dy)
+            score = (hits, 0 if natural else 1)
+            if best is None or score < best[0]:
+                best = (score, exit_xy, entry_xy, points)
+
+        _, exit_xy, entry_xy, points = best
+        style = (
+            f"{STYLE_EDGE}"
+            f"exitX={exit_xy[0]};exitY={exit_xy[1]};exitDx=0;exitDy=0;"
+            f"entryX={entry_xy[0]};entryY={entry_xy[1]};entryDx=0;entryDy=0;"
+        )
+        return style, points
 
     # -- XML 出力 --
     def to_xml(self, page_w, page_h, title):
@@ -314,13 +444,21 @@ class DiagramBuilder:
                 f'as="geometry"/>'
             )
             parts.append("        </mxCell>")
-        for eid, src, dst in self.edges:
+        for eid, src, dst, style, points in self.edges:
             parts.append(
-                f"        <mxCell id={quoteattr(eid)} style={quoteattr(STYLE_EDGE)} "
+                f"        <mxCell id={quoteattr(eid)} style={quoteattr(style)} "
                 f"edge=\"1\" source={quoteattr(src)} target={quoteattr(dst)} "
                 f'parent="1">'
             )
-            parts.append('          <mxGeometry relative="1" as="geometry"/>')
+            if points:
+                parts.append('          <mxGeometry relative="1" as="geometry">')
+                parts.append('            <Array as="points">')
+                for px, py in points:
+                    parts.append(f'              <mxPoint x="{px:g}" y="{py:g}"/>')
+                parts.append("            </Array>")
+                parts.append("          </mxGeometry>")
+            else:
+                parts.append('          <mxGeometry relative="1" as="geometry"/>')
             parts.append("        </mxCell>")
         parts += ["      </root>", "    </mxGraphModel>", "  </diagram>", "</mxfile>", ""]
         return "\n".join(parts)

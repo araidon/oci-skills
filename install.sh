@@ -64,6 +64,21 @@ list_skills() {
     fi
 }
 
+VALID_TOOLS="claude claude-local codex codex-local codex-repo"
+
+# ─── Validate the --tool value ────────────────────────────────
+# get_install_dir はコマンド置換の中で呼ばれるため、そこで error/exit しても
+# メッセージが変数に吸われ、set -e で無言終了してしまう。検証はここで行う。
+validate_tool() {
+    local tool="$1"
+    for valid in $VALID_TOOLS; do
+        [[ "$tool" == "$valid" ]] && return 0
+    done
+    error "Unknown tool: ${tool}"
+    error "Valid options: ${VALID_TOOLS// /, }"
+    return 1
+}
+
 # ─── Determine install destination ────────────────────────────
 get_install_dir() {
     local skill_name="$1"
@@ -95,9 +110,8 @@ get_install_dir() {
             echo "${git_root}/.agents/skills/${skill_name}"
             ;;
         *)
-            error "Unknown tool: $tool"
-            error "Valid options: claude, claude-local, codex, codex-local, codex-repo"
-            exit 1
+            # ここには validate_tool を通っていれば到達しない
+            echo "__INVALID_TOOL__"
             ;;
     esac
 }
@@ -281,6 +295,11 @@ main() {
                 ;;
         esac
     done
+
+    # --tool の検証はここで行う（コマンド置換の外なので、エラーが表示される）
+    if [[ "$action" != "list" && "$action" != "help" ]]; then
+        validate_tool "$tool" || exit 1
+    fi
 
     case "$action" in
         list)

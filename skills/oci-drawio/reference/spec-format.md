@@ -99,6 +99,10 @@ python3 scripts/oci_components.py "kubernetes" "ADB" "オブジェクトスト�
 同じコンポーネントが複数ある場合は `id` を明示すること。曖昧なままだと
 エラーになり、候補の ID が表示される。
 
+線の引き方（どの辺から出てどこで曲がるか）は指定しない。2つの図形の位置関係から、
+縦配線・横配線のうち **他のアイコンを貫通しない方** が自動で選ばれ、直交＋角丸で
+描かれる。詳細は `reference/layout-rules.md`。
+
 ---
 
 ## 例
@@ -124,3 +128,5 @@ python3 scripts/oci_components.py "kubernetes" "ADB" "オブジェクトスト�
 | `ICON_GAP_X` | 100 | アイコン間の余白（中心間 160px） |
 | `MAX_COLS` | 5 | 1行に並べる上限。超えたら折り返す |
 | `GW_STEP_Y` | 120 | ゲートウェイの縦間隔 |
+| `VCN_PAD_LEFT_WITH_GW` | 60 | 左枠線にGWがあるときの VCN 左内側 |
+| `EDGE_GUTTER` | 20 | 接続線の折れ点を図形から離す距離 |
