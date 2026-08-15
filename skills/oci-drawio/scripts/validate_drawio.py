@@ -176,7 +176,59 @@ def validate(path, comps, known_styles):
                         and a[1] < b[1] + b[3] and b[1] < a[1] + a[3]):
                     report.warn(f"{a_id!r} と {b_id!r} が重なっています（親 {parent!r}）")
 
-    # 9. ファイルサイズ
+    # 9. 接続線が無関係なアイコンを貫通していないか
+    def _abs(cid, seen=()):
+        cell = ids[cid]
+        g = _geom(cell)
+        if g is None:
+            return None
+        parent = cell.get("parent")
+        if parent in (None, "0", "1") or parent not in ids or parent in seen:
+            return g
+        pg = _abs(parent, seen + (cid,))
+        return (g[0] + pg[0], g[1] + pg[1], g[2], g[3]) if pg else g
+
+    boxes = {
+        cid: _abs(cid)
+        for cid, cell in ids.items()
+        if "shape=image" in (cell.get("style") or "") and _abs(cid)
+    }
+    for cid, cell in ids.items():
+        if cell.get("edge") != "1":
+            continue
+        src, dst = cell.get("source"), cell.get("target")
+        if src not in boxes or dst not in boxes:
+            continue
+        style = cell.get("style") or ""
+
+        def anchor(box, kind):
+            mx = re.search(rf"{kind}X=([\d.]+)", style)
+            my = re.search(rf"{kind}Y=([\d.]+)", style)
+            fx = float(mx.group(1)) if mx else 0.5
+            fy = float(my.group(1)) if my else 0.5
+            return box[0] + box[2] * fx, box[1] + box[3] * fy
+
+        way = [
+            (float(p.get("x", 0)), float(p.get("y", 0)))
+            for p in cell.findall('.//Array[@as="points"]/mxPoint')
+        ]
+        pts = [anchor(boxes[src], "exit")] + way + [anchor(boxes[dst], "entry")]
+        for other, (bx, by, bw, bh) in boxes.items():
+            if other in (src, dst):
+                continue
+            for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+                # 斜めの線分は draw.io 側で直交に引き直されるため判定しない
+                if abs(x1 - x2) > 1 and abs(y1 - y2) > 1:
+                    continue
+                if (min(x1, x2) < bx + bw and bx < max(x1, x2)
+                        and min(y1, y2) < by + bh and by < max(y1, y2)):
+                    report.warn(f"接続線 {cid!r} が {other!r} を貫通しています")
+                    break
+            else:
+                continue
+            break
+
+    # 10. ファイルサイズ
     size_kb = Path(path).stat().st_size / 1024
     if size_kb > SIZE_WARN_KB:
         report.warn(

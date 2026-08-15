@@ -55,13 +55,23 @@ python3 scripts/validate_drawio.py target.drawio
 
 ```xml
 <mxCell id="conn-1"
-        style="endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;edgeStyle=orthogonalEdgeStyle;"
+        style="endArrow=none;startArrow=none;strokeColor=#000000;strokeWidth=1;edgeStyle=orthogonalEdgeStyle;rounded=1;arcSize=8;jettySize=20;orthogonalLoop=1;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
         edge="1" source="lb-1" target="app-1" parent="1">
-  <mxGeometry relative="1" as="geometry"/>
+  <mxGeometry relative="1" as="geometry">
+    <Array as="points">
+      <mxPoint x="150" y="250"/>
+      <mxPoint x="310" y="250"/>
+    </Array>
+  </mxGeometry>
 </mxCell>
 ```
 
-接続線の `parent` は常に `1`（ルート）。
+接続線の `parent` は常に `1`（ルート）。折れ点（`<Array as="points">`）の座標も
+ルート基準の絶対座標で書く。
+
+出入口を `exitX/exitY`・`entryX/entryY` で固定しないと、draw.io が意図しない辺から
+線を出し、間にあるアイコンを貫通することがある。配置の指針は
+`reference/layout-rules.md` を参照。
 
 ---
 
