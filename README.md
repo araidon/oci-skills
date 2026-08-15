@@ -2,7 +2,7 @@
 
 OCI（Oracle Cloud Infrastructure）向けの AI コーディングアシスタント用 **Skills コレクション**です。
 
-[Claude Code](https://docs.anthropic.com/en/docs/claude-code) と [Codex（OpenAI）](https://openai.com/index/introducing-codex/) の両方で利用できます。スキルをインストールすると、AI アシスタントが OCI 関連の作業を自動化・効率化してくれます。
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code) と [Codex（OpenAI）](https://openai.com/index/introducing-codex/) の両方で利用できます。
 
 ---
 
@@ -10,117 +10,111 @@ OCI（Oracle Cloud Infrastructure）向けの AI コーディングアシスタ�
 
 ### oci-drawio — OCI 構成図ジェネレーター
 
-自然言語の指示から **draw.io 形式（.drawio）の OCI アーキテクチャ構成図**を自動生成するスキルです。
+自然言語の指示から **draw.io 形式（.drawio）の OCI アーキテクチャ構成図**を生成するスキルです。
 
 - 「3層Webアプリのアーキテクチャ図を描いて」のような指示で構成図を生成
-- 既存の `.drawio` ファイルを読み込んで編集・追記も可能
-- Oracle 公式の OCI アイコンを使用（ブランドガイドラインに準拠）
+- 既存の `.drawio` ファイルを読み込んで編集・追記
+- **AWS / Azure の構成図を OCI へ変換**（サービス対応表つき）
+- Oracle 公式の OCI アイコンを使用（234コンポーネント同梱）
 - Region → VCN → Subnet → Service の OCI 標準レイアウトに自動配置
+
+#### 仕組み
+
+構成図の XML を AI に直接書かせると、アイコン1個あたり数千文字の base64 を出力する
+ことになり、10個ほどで出力上限に達して壊れたファイルができます。このスキルでは、
+AI は 1〜2KB のスペックだけを書き、`.drawio` の組み立てはスクリプトが行います。
+
+```
+AI が書くスペック（約1KB）        →  build_drawio.py  →  正しい .drawio
+{"region": "...", "vcn": {...}}                          （検証つき）
+```
+
+生成後は `validate_drawio.py` が、XML の妥当性・参照切れ・アイコンデータの破損・
+要素のはみ出し・重なりを機械的にチェックします。
 
 #### 対応コンポーネント
 
-| カテゴリ | コンポーネント |
-|---------|-------------|
-| **Networking** | VCN, Subnet, Internet Gateway, NAT Gateway, Service Gateway, DRG, Load Balancer, Network Load Balancer, DNS, FastConnect, VPN |
-| **Compute** | VM Instance, Bare Metal, Autoscaling, Instance Pools, Functions |
-| **Database** | Autonomous Database, MySQL HeatWave, DB System, Exadata |
-| **Storage** | Object Storage, Block Volume, File Storage, Buckets |
-| **Security** | WAF, Network Firewall, Vault, Bastion, IAM |
-| **Container** | OKE, Container Instances, OCIR |
-| **Monitoring** | Streaming, Notifications, Logging, Monitoring |
+全234コンポーネント／13カテゴリ。完全な一覧は
+[`skills/oci-drawio/reference/component-list.md`](skills/oci-drawio/reference/component-list.md)。
+
+| カテゴリ | 件数 | 例 |
+|---|---|---|
+| Networking | 22 | VCN, Internet Gateway, NAT Gateway, Service Gateway, DRG, Load Balancer, Flexible Load Balancer, DNS, CDN, CPE |
+| Compute | 9 | VM Instance, Bare Metal, Flex VM, Autoscaling, Instance Pools, Functions |
+| Database | 48 | Autonomous Database, MySQL HeatWave, MySQL DB System, DB System, Exadata, Data Guard, GoldenGate |
+| Storage | 18 | Object Storage, Block Volume, File Storage, Buckets |
+| Identity & Security | 27 | WAF, Network Firewall, Vault, Bastion, IAM, NSG, Cloud Guard, Compartments |
+| Developer Services | 21 | OKE, Container Instances, OCIR, API Gateway, DevOps, Resource Manager |
+| Observability & Management | 14 | Logging, Monitoring, Alarms, Auditing, Events, Queuing |
+| Analytics & AI | 20 | Data Science, Data Flow, Generative AI, Streaming, Vision, Speech |
+| その他 | 55 | Applications / Governance / Hybrid / Migration / General |
+
+`VPC` `IGW` `ADB` `OSS` `KMS` `Kubernetes` などの略称・別名でも指定できます。
 
 #### サンプル構成図
 
-`skills/oci-drawio/examples/` にサンプルが含まれています。
+`skills/oci-drawio/examples/` にあります。生成元のスペックは `examples/specs/`。
 
-- **basic-web-3tier.drawio** — 基本的な 3 層 Web アーキテクチャ（LB + Web + App + ADB）
-- **ha-architecture.drawio** — 高可用性構成（WAF、冗長 Web/App サーバー、Data Guard）
+- **basic-web-3tier.drawio** — LB + Web/App × 3 + Autonomous Database
+- **ha-architecture.drawio** — WAF、内部LB、Web/App 冗長化、Data Guard、オンプレ接続
 
 ---
 
 ## インストール
 
-### 前提条件
+### Claude Code（プラグイン・推奨）
 
-- Git
-- Bash
+clone 不要で、Claude Code から直接インストールできます。
 
-### 手順
+```
+/plugin marketplace add araidon/oci-skills
+/plugin install oci-drawio@oci-skills
+```
+
+更新は `/plugin marketplace update` です。
+
+### Claude Code / Codex（install.sh）
 
 ```bash
-# 1. リポジトリをクローン
 git clone https://github.com/araidon/oci-skills.git
 cd oci-skills
-
-# 2. スキルをインストール
 ./install.sh oci-drawio
 ```
 
-### install.sh のオプション
+| インストール先 | `--tool` | パス |
+|---|---|---|
+| Claude Code（グローバル） | `claude`（既定） | `~/.claude/skills/<name>/` |
+| Claude Code（プロジェクト） | `claude-local` | `.claude/skills/<name>/` |
+| Codex（グローバル） | `codex` | `~/.codex/skills/<name>/` |
+| Codex（プロジェクト） | `codex-local` | `.codex/skills/<name>/` |
+| Codex（リポジトリスキャン） | `codex-repo` | `.agents/skills/<name>/` |
 
 ```bash
-# Claude Code にインストール（デフォルト）
-./install.sh oci-drawio
-
-# Codex にインストール（グローバル）
-./install.sh oci-drawio --tool codex
-
-# Codex にインストール（プロジェクトローカル）
-./install.sh oci-drawio --tool codex-local
-
-# Codex にインストール（リポジトリスキャン用）
-./install.sh oci-drawio --tool codex-repo
-
-# 利用可能なスキル一覧
-./install.sh --list
-
-# 全スキルを一括インストール
-./install.sh --all
+./install.sh --list                       # 一覧
+./install.sh --all                        # 全部入れる
+./install.sh oci-drawio --tool codex      # Codex に入れる
+./install.sh --uninstall oci-drawio       # 消す
+./install.sh oci-drawio -y                # 上書き確認を省略
 ```
 
-| インストール先 | パス | 用途 |
-|--------------|------|------|
-| Claude Code | `~/.claude/skills/<name>/` | Claude Code で利用 |
-| Codex（グローバル） | `~/.codex/skills/<name>/` | 全プロジェクトで利用 |
-| Codex（プロジェクト） | `.codex/skills/<name>/` | 特定プロジェクトで利用 |
-| Codex（リポジトリ） | `.agents/skills/<name>/` | リポジトリスキャン |
+既存のインストールを上書きする場合は確認を求めます（`-y` で省略）。
 
----
+### 前提条件
 
-## セットアップ（oci-drawio）
+- Git / Bash
+- Python 3.8 以上（構成図の生成・検証に使用）
+- PyYAML（任意。スペックを YAML で書きたい場合のみ）
 
-インストール後、初回のみセットアップスクリプトを実行して OCI アイコンを取得する必要があります。
-
-### 必要なツール
-
-- `curl`
-- `unzip`
-- `base64`
-- `python3`
-
-### 実行
-
-```bash
-cd ~/.claude/skills/oci-drawio    # インストール先に移動
-bash setup.sh
-```
-
-セットアップが完了すると以下が生成されます：
-
-- `icons/oci-shapes.xml` — draw.io 用カスタムアイコンライブラリ
-- `components/oci_components.json` — コンポーネント辞書（スタイル情報付き）
+**アイコンは同梱済みなので、セットアップ不要でそのまま使えます。**
 
 ---
 
 ## 使い方
 
-インストールとセットアップが完了すれば、AI アシスタントに指示するだけで構成図を生成できます。
-
-### Claude Code での例
-
 ```
 > OCI上に3層Webアプリの構成図を描いてください。
-> LBの後ろにWebサーバー2台、プライベートサブネットにAppサーバーとAutonomous Databaseを配置してください。
+> LBの後ろにWebサーバー2台、プライベートサブネットにAppサーバーと
+> Autonomous Databaseを配置してください。
 ```
 
 ### 既存ファイルの編集
@@ -130,20 +124,54 @@ bash setup.sh
 > 既存の構成図にWAFとBastionを追加して、高可用性構成にしてください。
 ```
 
-生成された `.drawio` ファイルは [draw.io](https://app.diagrams.net/)（デスクトップ版・Web版）でそのまま開けます。
+### AWS / Azure からの変換
+
+```
+> このAWSの構成図をOCIに置き換えた図を作ってください。（画像を添付）
+```
+
+サービス対応表と、1:1 対応しない箇所の注意点もあわせて出力されます。
+
+生成された `.drawio` は [draw.io](https://app.diagrams.net/)（デスクトップ版・Web版）で
+そのまま開けます。
+
+### draw.io の GUI で手描きする場合
+
+`skills/oci-drawio/icons/oci-shapes.xml` をシェイプライブラリとして読み込めます。
+
+```
+draw.io → File → Open Library → oci-shapes.xml
+```
+
+---
+
+## アイコンの更新
+
+Oracle がアイコンセットを更新したときだけ実行します（通常は不要）。
+
+```bash
+cd ~/.claude/skills/oci-drawio
+bash setup.sh                          # Oracle からダウンロード
+bash setup.sh --from-zip icons.zip     # 手元の zip から（ネットワーク不要）
+```
+
+必要なツール: `curl` `unzip` `base64` `python3`
+
+生成は一時領域で行い、検証を通ったときだけ差し替えるため、失敗しても既存のデータは
+壊れません。
 
 ---
 
 ## 注意事項
 
-- OCI アイコンは Oracle 公式サイトからダウンロードしています。アイコンの利用にあたっては Oracle のブランドガイドラインに従ってください。
-- `setup.sh` の実行にはインターネット接続が必要です。
-- draw.io の MCP サーバーは使用せず、XML テキストを直接生成する方式を採用しています。そのため追加のサーバー設定は不要です。
+- OCI アイコンの著作権は Oracle Corporation に帰属します。利用にあたっては Oracle の
+  ブランドガイドラインに従ってください。
+- draw.io の MCP サーバーは使用せず、`.drawio`（XML）を直接生成する方式です。
+  追加のサーバー設定は不要です。
 
 ---
 
 ## ライセンス
 
-このリポジトリのコードは MIT License で公開されています。
-
-OCI アイコンの著作権は Oracle Corporation に帰属します。
+コードは MIT License です（[LICENSE](LICENSE)）。
+OCI アイコンは Oracle Corporation に帰属し、MIT License の対象外です。

@@ -6,6 +6,8 @@
 #   ./install.sh <skill-name>                       # Claude Code (default)
 #   ./install.sh <skill-name> --tool codex          # Codex global (~/.codex/skills/)
 #   ./install.sh <skill-name> --tool codex-local    # Codex project (.codex/skills/)
+#   ./install.sh <skill-name> --tool claude-local   # Claude Code project (.claude/skills/)
+#   ./install.sh --uninstall <skill-name>           # Uninstall
 #   ./install.sh --list                             # List available skills
 #   ./install.sh --all                              # Install all skills
 #   ./install.sh --help                             # Show help
@@ -14,6 +16,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILLS_DIR="${SCRIPT_DIR}/skills"
+
+# --yes / -y で上書き確認を省略する
+ASSUME_YES=0
 
 # ─── Color helpers ────────────────────────────────────────────
 RED='\033[0;31m'
@@ -68,6 +73,12 @@ get_install_dir() {
         claude)
             echo "${HOME}/.claude/skills/${skill_name}"
             ;;
+        claude-local)
+            # プロジェクトローカルの .claude/skills/
+            local git_root
+            git_root=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+            echo "${git_root}/.claude/skills/${skill_name}"
+            ;;
         codex)
             echo "${HOME}/.codex/skills/${skill_name}"
             ;;
@@ -85,7 +96,7 @@ get_install_dir() {
             ;;
         *)
             error "Unknown tool: $tool"
-            error "Valid options: claude, codex, codex-local, codex-repo"
+            error "Valid options: claude, claude-local, codex, codex-local, codex-repo"
             exit 1
             ;;
     esac
@@ -107,27 +118,62 @@ install_skill() {
     local dest_dir
     dest_dir=$(get_install_dir "$skill_name" "$tool")
 
+    if [[ -d "$dest_dir" ]]; then
+        if [[ $ASSUME_YES -eq 0 ]]; then
+            warn "既にインストールされています: ${dest_dir}"
+            warn "上書きすると、そこでの変更（setup.sh で取得したアイコン等）は失われます。"
+            read -r -p "上書きしますか? [y/N] " reply </dev/tty 2>/dev/null || reply=""
+            if [[ ! "$reply" =~ ^[Yy]$ ]]; then
+                info "スキップしました: ${skill_name}"
+                return 0
+            fi
+        fi
+        rm -rf "$dest_dir"
+    fi
+
     info "Installing ${BOLD}${skill_name}${NC}${GREEN} to: ${dest_dir}${NC}"
 
-    # Create destination directory
-    mkdir -p "$dest_dir"
-
-    # Copy all files
-    # Remove old install if it exists, then copy fresh
-    rm -rf "$dest_dir"
+    mkdir -p "$(dirname "$dest_dir")"
     cp -r "$source_dir" "$dest_dir"
     # Clean up temp/cache files
     rm -rf "${dest_dir}/.tmp" "${dest_dir}/__pycache__"
 
-    # Check if setup.sh exists and remind user
+    # setup.sh は同梱データの再生成用。インストール直後に実行する必要はない。
     if [[ -f "${dest_dir}/setup.sh" ]]; then
         echo
-        warn "This skill has a setup script. Run it to download required assets:"
+        info "アイコンは同梱済みなので、そのまま使えます。"
+        info "Oracle のアイコンを取り直したい場合のみ:"
         echo -e "  ${CYAN}cd ${dest_dir} && bash setup.sh${NC}"
     fi
 
     echo
     info "Installed ${BOLD}${skill_name}${NC}${GREEN} successfully!${NC}"
+}
+
+# ─── Uninstall a skill ───────────────────────────────────────
+uninstall_skill() {
+    local skill_name="$1"
+    local tool="$2"
+
+    local dest_dir
+    dest_dir=$(get_install_dir "$skill_name" "$tool")
+
+    if [[ ! -d "$dest_dir" ]]; then
+        warn "インストールされていません: ${dest_dir}"
+        return 0
+    fi
+
+    if [[ $ASSUME_YES -eq 0 ]]; then
+        warn "削除します: ${dest_dir}"
+        read -r -p "本当に削除しますか? [y/N] " reply </dev/tty 2>/dev/null || reply=""
+        if [[ ! "$reply" =~ ^[Yy]$ ]]; then
+            info "中止しました。"
+            return 0
+        fi
+    fi
+
+    rm -rf "$dest_dir"
+    info "Uninstalled ${BOLD}${skill_name}${NC}${GREEN} (${dest_dir})${NC}"
 }
 
 # ─── Install all skills ──────────────────────────────────────
@@ -158,6 +204,7 @@ show_help() {
     echo -e "${BOLD}Usage:${NC}"
     echo "  ./install.sh <skill-name>                       Install for Claude Code (default)"
     echo "  ./install.sh <skill-name> --tool <target>       Install for a specific tool"
+    echo "  ./install.sh --uninstall <skill-name>           Uninstall a skill"
     echo "  ./install.sh --list                             List available skills"
     echo "  ./install.sh --all                              Install all skills"
     echo "  ./install.sh --all --tool <target>              Install all skills for a specific tool"
@@ -165,6 +212,7 @@ show_help() {
     echo
     echo -e "${BOLD}Targets (--tool):${NC}"
     echo "  claude        ~/.claude/skills/<name>/         Claude Code (default)"
+    echo "  claude-local  .claude/skills/<name>/           Claude Code project-local"
     echo "  codex         ~/.codex/skills/<name>/          Codex global"
     echo "  codex-local   .codex/skills/<name>/            Codex project-local"
     echo "  codex-repo    .agents/skills/<name>/           Codex repository scan"
@@ -174,10 +222,15 @@ show_help() {
     echo "  ./install.sh oci-drawio --tool codex           Install oci-drawio for Codex (global)"
     echo "  ./install.sh oci-drawio --tool codex-local     Install oci-drawio in current project"
     echo "  ./install.sh --all --tool codex                Install all skills for Codex"
+    echo "  ./install.sh oci-drawio --tool claude-local    Install into the current project"
+    echo "  ./install.sh --uninstall oci-drawio            Remove it again"
+    echo
+    echo -e "${BOLD}Options:${NC}"
+    echo "  -y, --yes     Do not ask before overwriting or deleting"
     echo
     echo -e "${BOLD}After Installation:${NC}"
-    echo "  If the skill includes a setup.sh, run it in the installed directory"
-    echo "  to download required assets (icons, templates, etc.)."
+    echo "  oci-drawio はアイコンを同梱しているため、そのまま使えます。"
+    echo "  setup.sh は Oracle のアイコンを取り直したいときだけ実行してください。"
 }
 
 # ─── Main ─────────────────────────────────────────────────────
@@ -199,6 +252,14 @@ main() {
                 ;;
             --help|-h)
                 action="help"
+                shift
+                ;;
+            --uninstall|-u)
+                action="uninstall"
+                shift
+                ;;
+            --yes|-y)
+                ASSUME_YES=1
                 shift
                 ;;
             --tool|-t)
@@ -224,6 +285,15 @@ main() {
     case "$action" in
         list)
             list_skills
+            ;;
+        uninstall)
+            if [[ -z "$skill_name" ]]; then
+                error "スキル名が指定されていません。"
+                echo
+                show_help
+                exit 1
+            fi
+            uninstall_skill "$skill_name" "$tool"
             ;;
         all)
             install_all "$tool"

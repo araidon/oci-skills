@@ -1,0 +1,61 @@
+{
+  "title": "OCI High Availability Architecture",
+  "region": "Japan East (Tokyo)",
+  "external": ["On-Premises Data Center"],
+  "vcn": {
+    "label": "VCN (10.0.0.0/16)",
+    "gateways": {
+      "left": ["Internet Gateway", "NAT Gateway", "DRG"],
+      "right": ["Service Gateway"]
+    },
+    "subnets": [
+      {
+        "label": "Edge Subnet (10.0.1.0/24) - Public",
+        "nodes": [
+          { "component": "WAF", "id": "waf" },
+          { "component": "Load Balancer", "label": "Public Load Balancer", "id": "lb-pub" },
+          { "component": "Bastion", "id": "bastion" }
+        ]
+      },
+      {
+        "label": "Web Subnet (10.0.2.0/24) - Private",
+        "nodes": [{ "component": "VM Instance", "label": "Web Server", "id": "web", "count": 2 }]
+      },
+      {
+        "label": "App Subnet (10.0.3.0/24) - Private",
+        "nodes": [
+          { "component": "Load Balancer", "label": "Internal LB", "id": "lb-int" },
+          { "component": "VM Instance", "label": "App Server", "id": "app", "count": 3 }
+        ]
+      },
+      {
+        "label": "Data Subnet (10.0.4.0/24) - Private",
+        "nodes": [
+          { "component": "DB System", "label": "DB System (Primary)", "id": "db-primary" },
+          { "component": "DB System", "label": "DB System (Standby)", "id": "db-standby" },
+          { "component": "Data Guard", "id": "dataguard" }
+        ]
+      }
+    ]
+  },
+  "regional_services": ["Object Storage", "Vault", "Logging", "Monitoring"],
+  "edges": [
+    ["Internet Gateway", "waf"],
+    ["waf", "lb-pub"],
+    ["lb-pub", "web-1"],
+    ["lb-pub", "web-2"],
+    ["web-1", "lb-int"],
+    ["web-2", "lb-int"],
+    ["lb-int", "app-1"],
+    ["lb-int", "app-2"],
+    ["lb-int", "app-3"],
+    ["app-1", "db-primary"],
+    ["app-2", "db-primary"],
+    ["app-3", "db-primary"],
+    ["db-primary", "dataguard"],
+    ["dataguard", "db-standby"],
+    ["DRG", "On-Premises Data Center"],
+    ["Service Gateway", "Object Storage"],
+    ["Service Gateway", "Logging"]
+  ]
+}

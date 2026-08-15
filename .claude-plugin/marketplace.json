@@ -1,0 +1,23 @@
+{
+  "name": "oci-skills",
+  "owner": {
+    "name": "araidon"
+  },
+  "description": "OCI（Oracle Cloud Infrastructure）向けの AI コーディングアシスタント用 Skills コレクション",
+  "plugins": [
+    {
+      "name": "oci-drawio",
+      "source": "./",
+      "skills": ["./skills/oci-drawio"],
+      "description": "OCI アーキテクチャ構成図を draw.io 形式（.drawio）で生成・編集する。AWS/Azure の構成図から OCI への変換にも対応。",
+      "version": "0.2.0",
+      "author": {
+        "name": "araidon"
+      },
+      "homepage": "https://github.com/araidon/oci-skills",
+      "license": "MIT",
+      "category": "productivity",
+      "tags": ["oci", "oracle-cloud", "drawio", "diagram", "architecture"]
+    }
+  ]
+}

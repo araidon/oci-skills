@@ -1,0 +1,41 @@
+{
+  "title": "OCI 3-Tier Web Architecture",
+  "region": "Japan East (Tokyo)",
+  "vcn": {
+    "label": "VCN (10.0.0.0/16)",
+    "gateways": {
+      "left": ["Internet Gateway", "NAT Gateway"],
+      "right": ["Service Gateway"]
+    },
+    "subnets": [
+      {
+        "label": "Edge Subnet (10.0.1.0/24) - Public",
+        "nodes": [
+          { "component": "Load Balancer", "id": "lb" },
+          { "component": "Bastion", "id": "bastion" }
+        ]
+      },
+      {
+        "label": "App Subnet (10.0.2.0/24) - Private",
+        "nodes": [{ "component": "VM Instance", "label": "Web/App Server", "id": "app", "count": 3 }]
+      },
+      {
+        "label": "Data Subnet (10.0.3.0/24) - Private",
+        "nodes": [{ "component": "Autonomous Database", "label": "Autonomous Database", "id": "db" }]
+      }
+    ]
+  },
+  "regional_services": ["Object Storage", "Vault"],
+  "edges": [
+    ["Internet Gateway", "lb"],
+    ["lb", "app-1"],
+    ["lb", "app-2"],
+    ["lb", "app-3"],
+    ["app-1", "db"],
+    ["app-2", "db"],
+    ["app-3", "db"],
+    ["NAT Gateway", "app-1"],
+    ["Service Gateway", "Object Storage"],
+    ["Service Gateway", "Vault"]
+  ]
+}
